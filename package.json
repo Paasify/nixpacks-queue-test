@@ -1,0 +1,16 @@
+{
+  "name": "nixpacks-queue-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Paasify/nixpacks-queue-test.git",
+  "author": "Amresh Prasad Sinha <35039730+AmreshSinha@users.noreply.github.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "yarn --cwd apps/backend dev",
+    "dev": "npm-run-all --parallel dev:backend"
+  }
+}
