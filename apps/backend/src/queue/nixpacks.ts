@@ -9,5 +9,9 @@ interface dataProps {
 }
 
 export const addToNixpacksQueue = async (data: dataProps) => {
-  await nixpacksQueue.add("build", data);
+  return await nixpacksQueue.add("build", data);
 };
+
+export const getNixpacksJobStatus = async (jobId: string) => {
+  return await nixpacksQueue.getJob(jobId);
+}

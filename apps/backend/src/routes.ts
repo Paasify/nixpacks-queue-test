@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { createHash } from "crypto";
-import { addToNixpacksQueue } from "./queue/nixpacks";
+import { addToNixpacksQueue, getNixpacksJobStatus } from "./queue/nixpacks";
+import { isValidGitUrl } from "./utils/gitUtils";
 
 const routes = Router();
 
@@ -11,6 +12,12 @@ routes.get("/", (req, res) => {
 // Nixpacks Test Routes
 routes.post("/add-to-build", async (req, res) => {
   const { name, url } = req.body;
+
+  // Valid Git Repo URL or not
+  const isValidUrl = await isValidGitUrl(url);
+  if (!isValidUrl) {
+    return res.status(400).json({ message: "Invalid URL" });
+  }
 
   // Create a md5 hash of url and assign it to id
   const id = createHash("md5").update(url).digest("hex");
@@ -23,16 +30,23 @@ routes.post("/add-to-build", async (req, res) => {
 
   const response = await addToNixpacksQueue(dataToAdd);
 
-  console.log(response);
-
   return res.status(200).json({
     message: "Added to build queue",
-    // jobId: jobId,
+    jobId: response.id,
   });
 });
 
-routes.get("/build-status", (req, res) => {
-  return res.json({ message: "Status" });
+routes.get("/build-status", async (req, res) => {
+  const { jobId } = req.query;
+
+  const job = await getNixpacksJobStatus(jobId as string);
+
+  if (job == null) {
+    return res.status(404).json({ message: "Job not found" });
+  } else {
+    const state = await job.getState();
+    return res.status(200).json({ state, job });
+  }
 });
 
 routes.get("/result", (req, res) => {
